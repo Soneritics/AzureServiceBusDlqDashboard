@@ -38,12 +38,16 @@ public class EmptyQueueDlqMessages(IAzureServiceBusService serviceBusService)
         }
         else
         {
+            var bus = BusStatusRepository.BusStatuses.Find(s => s.Id.Equals(busName));
+            
             await response.WriteAsJsonAsync(
                 await serviceBusService.GetQueueDlqMessagesAsync(
-                    BusStatusRepository.BusStatuses.Find(s => s.Id.Equals(busName))!.ConnectionString,
+                    bus!.ConnectionString,
                     queueName,
                     false,
                     true));
+            
+            bus.Queues.First(q => q.Name.Equals(queueName)).DeadLetterMessageCount = 0;
         }
         
         return response;

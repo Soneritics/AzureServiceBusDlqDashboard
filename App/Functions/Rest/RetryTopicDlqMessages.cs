@@ -39,13 +39,22 @@ public class RetryTopicDlqMessages(IAzureServiceBusService serviceBusService)
         }
         else
         {
+            var bus = BusStatusRepository.BusStatuses.Find(s => s.Id.Equals(busName));
+            
             await response.WriteAsJsonAsync(
                 await serviceBusService.GetTopicDlqMessagesAsync(
-                    BusStatusRepository.BusStatuses.Find(s => s.Id.Equals(busName))!.ConnectionString,
+                    bus!.ConnectionString,
                     topicName,
                     subscriptionName,
                     true,
                     true));
+            
+            bus
+                .Topics
+                .First(t => t.Name.Equals(topicName))
+                .Subscriptions
+                .First(s => s.Name.Equals(subscriptionName))
+                .DeadLetterMessageCount = 0;
         }
         
         return response;
