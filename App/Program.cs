@@ -1,6 +1,6 @@
 using Backend.Repository;
 using Backend.Services;
-using Domain;
+using Domain.Status;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;

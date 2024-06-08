@@ -1,4 +1,4 @@
-namespace Domain;
+namespace Domain.Status;
 
 public class Topic(string name)
 {

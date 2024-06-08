@@ -8,7 +8,7 @@ namespace Backend.Functions.Rest;
 public class GetStatuses
 {
     [Function(nameof(GetStatuses))]
-    public async Task<HttpResponseData> Run(
+    public async Task<HttpResponseData> RunAsync(
         [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req,
         FunctionContext executionContext)
     {
