@@ -1,13 +1,22 @@
 ﻿using System.Net;
+using Backend.Functions.Responses;
 using Backend.Repository;
 using Backend.Services;
+using Domain.Message;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.OpenApi.Models;
 
 namespace Backend.Functions.Rest;
 
 public class RetryQueueDlqMessages(IAzureServiceBusService serviceBusService)
 {
+    [OpenApiOperation(operationId: nameof(RetryQueueDlqMessages))]
+    [OpenApiParameter(nameof(busName), In = ParameterLocation.Query, Required = true, Type = typeof(string))]
+    [OpenApiParameter(nameof(queueName), In = ParameterLocation.Query, Required = true, Type = typeof(string))]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, "application/json", typeof(IEnumerable<ServiceBusMessage>))]
+    [OpenApiResponseWithBody(HttpStatusCode.BadRequest, "application/json", typeof(ErrorResponse))]
     [Function(nameof(RetryQueueDlqMessages))]
     public async Task<HttpResponseData> RunAsync(
         [HttpTrigger(AuthorizationLevel.Function, "get")]
@@ -21,19 +30,13 @@ public class RetryQueueDlqMessages(IAzureServiceBusService serviceBusService)
         if (string.IsNullOrEmpty(busName) || string.IsNullOrEmpty(queueName))
         {
             await response.WriteAsJsonAsync(
-                new
-                {
-                    Error = "BusName and QueueName must be provided"
-                },
+                new ErrorResponse("BusName and QueueName must be provided"),
                 HttpStatusCode.BadRequest);
         }
         else if (!BusStatusRepository.BusStatuses.Any(s => s.Id.Equals(busName)))
         {
             await response.WriteAsJsonAsync(
-                new
-                {
-                    Error = "BusName not found"
-                },
+                new ErrorResponse("BusName not found"),
                 HttpStatusCode.BadRequest);
         }
         else
